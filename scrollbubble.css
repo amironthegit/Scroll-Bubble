@@ -1,0 +1,181 @@
+/* ============================================================
+   Scroll Bubble
+   ۱) ظاهر خود اسکرول‌بار ابسیدین → مثل دستگیره‌ی فایل DOCX Viewer
+      (بنفش، کپسولی، سه خط ریز وسطش)
+   ۲) موقع درگ کردن، کنارش حباب: درصد (درشت و پررنگ) + هدینگ (کم‌رنگ)
+
+   نصب: این فایل → <vault>/.obsidian/snippets/scrollbubble.css  و فعال‌سازی توی Appearance
+        پلاگین همراه (main.js + manifest.json) → <vault>/.obsidian/plugins/scrollbubble/
+   همه‌ی عددها و رنگ‌ها فقط توی بلوک  body { ... }  پایین عوض میشن.
+   ============================================================ */
+
+body {
+
+  /* ############################################################
+     بخش ۱ — خود اسکرول‌بار (اینجا رو عوض کن)
+     ############################################################ */
+
+  /* --- ابعاد --- */
+  --fs-hit-width: 24px;       /* عرض کل ستون اسکرول‌بار = ناحیه‌ی کلیک/لمس.
+                                 بیشتر → دستگیره‌ی چاق‌تر و گرفتنش راحت‌تر (مثلا 16 تا 40) */
+  --fs-ring-width: 2px;       /* ضخامت حاشیه‌ی روشن دور دستگیره (0px = بدون حاشیه).
+                                 عرض بنفشِ دستگیره = hit-width منهای دو برابر ring-width (پیش‌فرض 24-4 = 20px) */
+  --fs-thumb-height: 76px;    /* حداقل طول دستگیره. (طول واقعی بسته به طول فایل بزرگ‌تر هم میشه) */
+
+  /* --- رنگ‌ها --- */
+  --fs-accent: #7c5cff;               /* رنگ دستگیره (یا var(--interactive-accent) تا با تم هماهنگ باشه) */
+  --fs-accent-hover: #6a47ff;         /* رنگ دستگیره وقتی موس روشه / درگ میشه */
+  --fs-grip-color: rgba(255, 255, 255, .85);  /* رنگ سه خط ریز وسط دستگیره */
+  --fs-ring-color: rgba(255, 255, 255, .55);  /* رنگ حاشیه‌ی روشن دور دستگیره */
+  --fs-track-bg: transparent;         /* رنگ ریل (پشت دستگیره). مثلا rgba(124,92,255,.08) */
+
+  /* ############################################################
+     بخش ۲ — رفتار حباب
+     ############################################################ */
+  --fs-bubble-gap: 10px;       /* فاصله‌ی حباب از اسکرول‌بار */
+  --fs-edge-hit: 16px;         /* حداقل عرض ناحیه‌ی لبه‌ی راست که «اسکرول‌بار» حساب میشه
+                                  (فقط برای وقتی که اسکرول‌بار مخفی/overlay/خیلی باریکه) */
+  --fs-locale: "en-US";        /* ارقام درصد: fa-IR فارسی، en-US انگلیسی */
+  --fs-percent-sign: "%";      /* ٪ یا % */
+  --fs-heading-max-chars: 80;  /* حداکثر تعداد حرف نام هدینگ (بیشتر → ...) */
+  --fs-bubble-dir: rtl;        /* rtl یا ltr — جهت متن داخل حباب */
+
+  /* ############################################################
+     بخش ۳ — ظاهر حباب
+     ############################################################ */
+  --fs-bubble-bg: var(--background-primary);
+  --fs-bubble-border: var(--background-modifier-border);
+  --fs-bubble-text: var(--text-normal);
+  --fs-bubble-radius: 16px;
+  --fs-bubble-min-width: 72px;
+  --fs-bubble-max-width: 260px;   /* عرض حداکثر حباب */
+  --fs-bubble-padding: 10px 14px;
+  --fs-bubble-font: var(--font-interface);
+  --fs-pct-size: 20px;            /* اندازه‌ی درصد */
+  --fs-pct-weight: 700;           /* ضخامت درصد (700 تا 900) */
+  --fs-heading-size: 16px;        /* اندازه‌ی هدینگ */
+  --fs-heading-opacity: 1;     /* کم‌رنگی هدینگ: 0.3 خیلی کم‌رنگ … 1 کامل */
+  --fs-z-index: 9999;
+}
+
+
+/* ============================================================
+   اسکرول‌بار ابسیدین ← دستگیره‌ی کپسولی بنفش
+   (برای اعمال روی جاهای دیگه مثل فایل‌اکسپلورر، سلکتور رو به لیست اضافه کن
+    مثلا:  .nav-files-container )
+   ============================================================ */
+
+/* نکته: ابسیدین/تم خودش هم برای اسکرول‌بار قانون داره؛ برای همین اینجا سلکتورها قوی‌تر
+   (body .x.x) و مقدارها !important هستن تا قانون ما همیشه برنده بشه. */
+
+/* اگه scrollbar-width یا scrollbar-color ست شده باشه، استایل webkit نادیده گرفته میشه؛
+   این دو خط جلوشو می‌گیره */
+body .cm-scroller.cm-scroller,
+body .markdown-preview-view.markdown-preview-view {
+  scrollbar-width: auto !important;
+  scrollbar-color: auto !important;
+}
+
+/* ستون اسکرول‌بار = ناحیه‌ی کلیک */
+body .cm-scroller.cm-scroller::-webkit-scrollbar,
+body .markdown-preview-view.markdown-preview-view::-webkit-scrollbar {
+  width: var(--fs-hit-width) !important;
+}
+
+/* ریل */
+body .cm-scroller.cm-scroller::-webkit-scrollbar-track,
+body .markdown-preview-view.markdown-preview-view::-webkit-scrollbar-track {
+  background: var(--fs-track-bg) !important;
+}
+body .cm-scroller.cm-scroller::-webkit-scrollbar-corner,
+body .markdown-preview-view.markdown-preview-view::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* دستگیره‌ی عمودی: کپسول کامل با حاشیه‌ی روشن (حاشیه = border، پس بیرونِ بنفشه) */
+body .cm-scroller.cm-scroller::-webkit-scrollbar-thumb:vertical,
+body .markdown-preview-view.markdown-preview-view::-webkit-scrollbar-thumb:vertical {
+  min-height: var(--fs-thumb-height) !important;
+  box-sizing: border-box !important;
+  border: var(--fs-ring-width) solid var(--fs-ring-color) !important;
+  border-radius: 999px !important;                 /* کپسولی کامل. برای گوشه‌ی کمتر گرد مثلا 8px */
+  background-clip: padding-box !important;
+  background-color: var(--fs-accent) !important;
+  /* سه خط ریز وسط دستگیره — اگه نمی‌خوای، سه خط linear-gradient و سه مقدار position رو پاک کن */
+  background-image:
+    linear-gradient(var(--fs-grip-color), var(--fs-grip-color)),
+    linear-gradient(var(--fs-grip-color), var(--fs-grip-color)),
+    linear-gradient(var(--fs-grip-color), var(--fs-grip-color)) !important;
+  background-size: 8px 2px !important;
+  background-repeat: no-repeat !important;
+  background-position: center calc(50% - 6px), center 50%, center calc(50% + 6px) !important;
+  box-shadow: none !important;
+}
+body .cm-scroller.cm-scroller::-webkit-scrollbar-thumb:vertical:hover,
+body .cm-scroller.cm-scroller::-webkit-scrollbar-thumb:vertical:active,
+body .markdown-preview-view.markdown-preview-view::-webkit-scrollbar-thumb:vertical:hover,
+body .markdown-preview-view.markdown-preview-view::-webkit-scrollbar-thumb:vertical:active {
+  background-color: var(--fs-accent-hover) !important;
+}
+
+/* دستگیره‌ی افقی (جدول/کد عریض) — ساده و هم‌رنگ */
+body .cm-scroller.cm-scroller::-webkit-scrollbar-thumb:horizontal,
+body .markdown-preview-view.markdown-preview-view::-webkit-scrollbar-thumb:horizontal {
+  background-color: var(--fs-accent) !important;
+  border-radius: 999px !important;
+}
+
+
+/* ============================================================
+   حباب درصد + هدینگ (موقع درگ)
+   ============================================================ */
+.fs-bubble {
+  position: fixed;
+  top: 0;                       /* موقعیت رو پلاگین می‌ذاره */
+  left: 0;
+  z-index: var(--fs-z-index);
+  width: max-content;
+  min-width: var(--fs-bubble-min-width);
+  max-width: min(64vw, var(--fs-bubble-max-width));
+  box-sizing: border-box;
+  direction: var(--fs-bubble-dir);
+  text-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--fs-bubble-padding);
+  background: var(--fs-bubble-bg);
+  color: var(--fs-bubble-text);
+  border: 1px solid var(--fs-bubble-border);
+  border-radius: var(--fs-bubble-radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .18);
+  font-family: var(--fs-bubble-font);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .12s ease, visibility 0s linear .12s;
+}
+.fs-bubble.show {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .12s ease, visibility 0s;
+}
+
+/* درصد: درشت و پررنگ */
+.fs-pct {
+  font-size: var(--fs-pct-size);
+  font-weight: var(--fs-pct-weight);
+  line-height: 1.4;
+}
+
+/* هدینگ: کم‌رنگ، زیر درصد. اگه فایل هدینگ نداشته باشه خالیه و دیده نمیشه */
+.fs-sec {
+  font-size: var(--fs-heading-size);
+  line-height: 1.7;
+  color: var(--text-muted);
+  opacity: var(--fs-heading-opacity);
+  overflow-wrap: anywhere;
+}
+.fs-sec:empty {
+  display: none;
+}
