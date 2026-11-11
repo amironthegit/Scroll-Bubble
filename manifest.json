@@ -1,6 +1,6 @@
 {
-  "id": "fast-scroll-bar",
-  "name": "Fast Scroll Bar",
+  "id": "scrollbubble",
+  "name": "Scroll Bubble",
   "version": "1.0.0",
   "minAppVersion": "1.5.0",
   "description": "Draggable fast-scroll thumb with a percentage + current-heading bubble. Styled entirely by the fast-scroll.css snippet.",
